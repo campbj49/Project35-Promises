@@ -68,21 +68,33 @@ axios.get(`${baseURL}/new/shuffle/?deck_count=1`)
 
 //handle draw card button function
 let deck_id;
-async function draw(){
+
+function handleCard(c){
+    let newImg = document.createElement("img");
+    console.log(c.data.cards);
+    newImg.src = c.data.cards[0].image;
+    newImg.style.transform = `rotate(${(Math.floor(Math.random() * 90))-45}deg)`;
+    document.getElementById("face-up").appendChild(newImg);
+}
+
+function draw(){
   if (deck_id === undefined){
-    deck_id = await axios.get(`${baseURL}/new/shuffle/?deck_count=1`)
+    axios.get(`${baseURL}/new/shuffle/?deck_count=1`)
     .then(d=>{
-      return d.data.deck_id;
+      deck_id= d.data.deck_id;
+      return axios.get(`${baseURL}/${deck_id}/draw`)
+      .then(c=>{
+        handleCard(c);
+      })
+      .catch(error => {
+        console.log(`Error with request:( ${error}`);
+      });
     })
   }
 
-  axios.get(`${baseURL}/${deck_id}/draw`)
+  else axios.get(`${baseURL}/${deck_id}/draw`)
     .then(c=>{
-      let newImg = document.createElement("img");
-      console.log(c.data.cards);
-      newImg.src = c.data.cards[0].image;
-      newImg.style.transform = `rotate(${(Math.floor(Math.random() * 90))-45}deg)`;
-      document.getElementById("face-up").appendChild(newImg);
+      handleCard(c);
     })
     .catch(error => {
       console.log(`Error with request:( ${error}`);
